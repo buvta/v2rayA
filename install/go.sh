@@ -160,10 +160,10 @@ downloadV2Ray(){
     mkdir -p /tmp/v2ray
     if [[ "${DIST_SRC}" == "jsdelivr" ]]; then
         TAG_URL="https://api.github.com/repos/v2ray/dist/tags"
-        DIST_LATEST_VER="$(normalizeVersion "$(curl ${PROXY} -s "${TAG_URL}" --connect-timeout 10| grep 'name' | awk 'NR==1{print}' | cut -d\" -f4)")"
+        DIST_LATEST_VER="$(normalizeVersion "$(curl ${PROXY} -s "${TAG_URL}" --connect-timeout 10| grep -Eo '"name":.*' | awk 'NR==1{print}' | cut -d\" -f4)")"
         DOWNLOAD_LINK="https://cdn.jsdelivr.net/gh/v2ray/dist@${DIST_LATEST_VER}/v2ray-linux-${VDIS}.zip"
     else
-        DOWNLOAD_LINK="https://github.com/v2ray/v2ray-core/releases/download/${NEW_VER}/v2ray-linux-${VDIS}.zip"
+        DOWNLOAD_LINK="https://github.com/v2fly/v2ray-core/releases/download/${NEW_VER}/v2ray-linux-${VDIS}.zip"
     fi
     colorEcho ${BLUE} "Downloading V2Ray: ${DOWNLOAD_LINK}"
     curl ${PROXY} -L -H "Cache-Control: no-cache" -o ${ZIPFILE} ${DOWNLOAD_LINK}
@@ -240,8 +240,8 @@ getVersion(){
         VER="$(/usr/bin/v2ray/v2ray -version 2>/dev/null)"
         RETVAL=$?
         CUR_VER="$(normalizeVersion "$(echo "$VER" | head -n 1 | cut -d " " -f2)")"
-        TAG_URL="https://api.github.com/repos/v2ray/v2ray-core/releases/latest"
-        NEW_VER="$(normalizeVersion "$(curl ${PROXY} -s "${TAG_URL}" --connect-timeout 10| grep 'tag_name' | cut -d\" -f4)")"
+        TAG_URL="https://api.github.com/repos/v2fly/v2ray-core/releases/latest"
+        NEW_VER="$(normalizeVersion "$(curl ${PROXY} -s "${TAG_URL}" --connect-timeout 10| grep -Eo '"tag_name":.*' | cut -d\" -f4)")"
 
         if [[ $? -ne 0 ]] || [[ $NEW_VER == "" ]]; then
             colorEcho ${RED} "Failed to fetch release information. Please check your network or try again."
