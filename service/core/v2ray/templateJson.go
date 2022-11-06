@@ -8,7 +8,7 @@ const TemplateJson = `
             "listen": "0.0.0.0",
             "protocol": "socks",
             "sniffing": {
-                "enabled": true,
+                "enabled": false,
                 "destOverride": [
                     "http",
                     "tls"
@@ -28,7 +28,7 @@ const TemplateJson = `
             "listen": "0.0.0.0",
             "protocol": "http",
             "sniffing": {
-                "enabled": true,
+                "enabled": false,
                 "destOverride": [
                     "http",
                     "tls"
@@ -37,17 +37,37 @@ const TemplateJson = `
             "tag": "http"
         },
         {
-            "port": 20172,
+            "port": 0,
             "listen": "0.0.0.0",
-            "protocol": "http",
+            "protocol": "socks",
             "sniffing": {
-                "enabled": true,
+                "enabled": false,
                 "destOverride": [
                     "http",
                     "tls"
                 ]
             },
-            "tag": "rule"
+            "settings": {
+                "auth": "noauth",
+                "udp": true,
+                "ip": null,
+                "clients": null
+            },
+            "streamSettings": null,
+            "tag": "rule-socks"
+        },
+        {
+            "port": 20172,
+            "listen": "0.0.0.0",
+            "protocol": "http",
+            "sniffing": {
+                "enabled": false,
+                "destOverride": [
+                    "http",
+                    "tls"
+                ]
+            },
+            "tag": "rule-http"
         },
         {
             "listen": "0.0.0.0",

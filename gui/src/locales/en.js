@@ -15,7 +15,8 @@ export default {
     message: "Message",
     none: "none",
     optional: "optional",
-    loadBalance: "Load Balance"
+    loadBalance: "Load Balance",
+    log: "Logs"
   },
   welcome: {
     title: "Welcome",
@@ -40,8 +41,17 @@ export default {
     lastTryTime: "Last try time",
     messages: {
       notAllowInsecure:
-        "According to the docs of {name}, if you use {name}, AllowInsecure will be forbidden."
+        "According to the docs of {name}, if you use {name}, AllowInsecure will be forbidden.",
+      notRecommend:
+        "According to the docs of {name}, if you use {name}, AllowInsecure is not recommend."
     }
+  },
+  InSecureConfirm: {
+    title: "Dangerous configuration detected",
+    message:
+      "The configuration has set the <b>AllowInsecure</b> to true. This may cause security risks. Are you sure to continue?",
+    confirm: "I know what I'm doing",
+    cancel: "cancel"
   },
   subscription: {
     host: "Host",
@@ -91,25 +101,25 @@ export default {
     password: "Password"
   },
   setting: {
-    transparentProxy: "Transparent Proxy",
-    transparentType: "Transparent Proxy Implementation",
+    transparentProxy: "Transparent Proxy/System Proxy",
+    transparentType: "Transparent Proxy/System Proxy Implementation",
     pacMode: "Traffic Splitting Mode of Rule Port",
     preventDnsSpoofing: "Prevent DNS Spoofing",
     specialMode: "Special Mode",
     mux: "Multiplex",
     autoUpdateSub: "Automatically Update Subscriptions",
     autoUpdateGfwlist: "Automatically Update GFWList",
-    preferModeWhenUpdate: "Mode when Upadate Subscriptions and GFWList",
+    preferModeWhenUpdate: "Mode when Update Subscriptions and GFWList",
     ipForwardOn: "IP Forward",
     portSharingOn: "Port Sharing",
     concurrency: "Concurrency",
     options: {
-      global: "Proxy All Traffic",
+      global: "Do not Split Traffic",
       direct: "Direct",
       pac: "Depend on Rule Port",
       whitelistCn: "Proxy except CN Sites",
-      gfwlist: "Proxy Only GFWList",
-      sameAsPacMode: "The Same as the Rule Port",
+      gfwlist: "Proxy only GFWList",
+      sameAsPacMode: "Traffic Splitting Mode is the Same as the Rule Port",
       customRouting: "Customized Routing",
       antiDnsHijack: "Prevent DNS Hijack Only (fast)",
       forwardDnsRequest: "Forward DNS Request",
@@ -121,7 +131,7 @@ export default {
       updateSubAtIntervals: "Update Subscriptions Regularly (Unit: hour)",
       updateGfwlistWhenStart: "Update GFWList When Service Starts",
       updateGfwlistAtIntervals: "Update GFWList Regularly (Unit: hour)",
-      dependTransparentMode: "Depend on Transparent Proxy",
+      dependTransparentMode: "Follows Transparent Proxy/System Proxy",
       closed: "Off",
       advanced: "Advanced Setting"
     },
@@ -132,12 +142,12 @@ export default {
         "If transparent proxy on, no extra configure needed and all TCP traffic will pass through the v2rayA. Providing proxy service to other computers and docker as the gateway should make option 'Share in LAN' on.",
       transparentType:
         "★tproxy: support UDP, but not support docker. ★redirect: friendly for docker, but does not support UDP and need to occupy local port 53 for dns anti-pollution.",
-      pacMode: `Here you can set the splitting traffic rule of rule port. By default, "Rule of Splitting Traffic" port is 20172 and HTTP protocol.`,
+      pacMode: `Here you can set the splitting traffic rule of the rule port. By default, "Rule of Splitting Traffic" port is 20172 and HTTP protocol.`,
       preventDnsSpoofing:
         "★Forward DNS Request: DNS requests will be forwarded by proxy server." +
         "★DoH(dns-over-https, v2ray-core: 4.22.0+): DNS over HTTPS.",
       specialMode:
-        "★supervisor：Monitor dns pollution, intercept in advance, use sniffing mechanism of v2ray-core to prevent pollution. ★fakedns：Use the fakens strategy to speed up the resolving.",
+        "★supervisor：Monitor dns pollution, intercept in advance, use the sniffing mechanism of v2ray-core to prevent pollution. ★fakedns：Use the fakens strategy to speed up the resolving.",
       tcpFastOpen:
         "Simplify TCP handshake process to speed up connection establishment. Risk of emphasizing characteristics of packets exists. It may cause failed to connect if your system does not support it.",
       mux:
@@ -148,7 +158,11 @@ export default {
                           <p>TCP: {tcpPorts}</p>
                           <p>UDP: {udpPorts}</p>`,
       xtlsNotWithWs: `xtls cannot work with websocket`,
-      grpcShouldWithTls: `gRPC must be with TLS`
+      grpcShouldWithTls: `gRPC must be with TLS`,
+      ssPluginImpl:
+        "★default: 'transport' for simple-obfs, 'chained' for v2ray-plugin." +
+        "★chained: shadowsocks traffic will be redirect to standalone plugin." +
+        "★transport: processed by the transport layer of v2ray/xray core directly."
     }
   },
   customAddressPort: {
@@ -156,6 +170,7 @@ export default {
     serviceAddress: "Address of Service",
     portSocks5: "Port of SOCKS5",
     portHttp: "Port of HTTP",
+    portSocks5WithPac: "Port of SOCKS5(with Rule)",
     portHttpWithPac: "Port of HTTP(with Rule)",
     portVlessGrpc: "Port of VLESS-GRPC(with Rule)",
     portVlessGrpcPrompt: "Link of VLESS-GRPC port",
@@ -253,12 +268,14 @@ export default {
   },
   latency: {
     message:
-      "Latency test used to cost one or several minutes. Wait patiently please."
+      "Latency tests used to cost one or several minutes. Wait patiently please."
   },
   version: {
     higherVersionNeeded:
       "This operation need higher version of v2rayA than {version}",
-    v2rayInvalid: "v2ray-core may not be installed correctly"
+    v2rayInvalid:
+      "geosite.dat, geoip.dat or v2ray-core may not be installed correctly",
+    lowCoreVersion: "the version of core is too low, unexpected behavior may occur"
   },
   about: `<p>v2rayA is a web GUI client of V2Ray. Frontend is built with Vue.js and backend is built with golang.</p>
           <p class="about-small">Default ports:</p>
@@ -269,7 +286,7 @@ export default {
           <p class="about-small">Other ports：</p>
           <p class="about-small">32345: tproxy, needed by transparent proxy </p>
           <p class="about-small">32346: port of plugins such as trojan, ssr and pingtunnel</p>
-          <p>All data is stored in local instead of cloud. </p>
+          <p>All data is stored in local instead of in the cloud. </p>
           <p>Problems found during use can be reported at <a href="https://github.com/v2rayA/v2rayA/issues">issues</a>.</p>`,
   axios: {
     messages: {
@@ -278,7 +295,7 @@ export default {
         "Cannot find v2rayA at {url}. Make sure v2rayA is running at this address.",
       cannotCommunicate: [
         "Cannot communicate. If your service is running and ports open correctly, the reason may be that current browser does not allow https sites to access http resources, you can try using Chrome or switching to alternate http site.",
-        "Cannot communicate. Firefox does not allow https sites to access http resources, you can try switching to alternate http site."
+        "Cannot communicate. Firefox does not allow https sites to access http resources, you can try switching to alternate http sites."
       ]
     },
     urls: {
@@ -292,5 +309,10 @@ export default {
     addMessage: "Please input the outbound name you want to add:",
     deleteMessage:
       'Be sure to <b>DELETE</b> the outbound "{outboundName}"? It is not reversible.'
+  },
+  log: {
+    logModalTitle: "View logs",
+    refreshInterval: "Refresh Interval",
+    seconds: "seconds"
   }
 };

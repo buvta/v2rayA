@@ -5,7 +5,6 @@ import (
 	"embed"
 	"fmt"
 	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/v2rayA/v2rayA/common"
 	"github.com/v2rayA/v2rayA/conf"
@@ -14,6 +13,7 @@ import (
 	"github.com/v2rayA/v2rayA/pkg/server/reqCache"
 	"github.com/v2rayA/v2rayA/pkg/util/log"
 	"github.com/v2rayA/v2rayA/server/controller"
+	"github.com/vearutop/statigz"
 	"io"
 	"io/fs"
 	"net"
@@ -45,7 +45,7 @@ func cachedHTML(html []byte) func(ctx *gin.Context) {
 			return
 		}
 		ctx.Header("Content-Type", "text/html; charset=utf-8")
-		ctx.Header("Cache-Control", "public, max-age=31536000")
+		ctx.Header("Cache-Control", "public, must-revalidate")
 		ctx.Header("ETag", etag)
 		if match := ctx.GetHeader("If-None-Match"); match != "" {
 			if strings.Contains(match, etag) {
@@ -57,39 +57,25 @@ func cachedHTML(html []byte) func(ctx *gin.Context) {
 	}
 }
 
-func ServeGUI(engine *gin.Engine) {
-	r := engine.Use(gzip.Gzip(gzip.DefaultCompression))
+func ServeGUI(r *gin.Engine) {
 	webDir := conf.GetEnvironmentConfig().WebDir
 	if webDir == "" {
-		webFS := relativeFS{
-			root:        webRoot,
-			relativeDir: "web",
+		webFS, err := fs.Sub(webRoot, "web")
+		if err != nil {
+			log.Fatal("fs.Sub: %v", err)
 		}
-		fs.WalkDir(webFS, "/", func(path string, info fs.DirEntry, err error) error {
-			if path == "/" {
-				return nil
-			}
-			if info.IsDir() {
-				r.StaticFS("/"+info.Name(), http.FS(relativeFS{
-					root:        webFS,
-					relativeDir: path,
-				}))
-				return filepath.SkipDir
-			}
-			r.GET("/"+info.Name(), func(ctx *gin.Context) {
-				ctx.FileFromFS(path, http.FS(webFS))
-			})
-			return nil
+		ss := http.StripPrefix("/static", statigz.FileServer(webFS.(fs.ReadDirFS)))
+		r.GET("/static/*w", func(c *gin.Context) {
+			ss.ServeHTTP(c.Writer, c.Request)
 		})
-
 		f, err := webFS.Open("index.html")
 		if err != nil {
-			log.Fatal("%v", err)
+			log.Fatal("webFS.Open index.html:", err)
 		}
 		defer f.Close()
 		html, err := io.ReadAll(f)
 		if err != nil {
-			log.Fatal("%v", err)
+			log.Fatal("ReadAll index.html: %v", err)
 		}
 		r.GET("/", cachedHTML(html))
 	} else {
@@ -101,21 +87,21 @@ func ServeGUI(engine *gin.Engine) {
 					return nil
 				}
 				if info.IsDir() {
-					r.Static("/"+info.Name(), path)
+					r.Static("/static/"+info.Name(), path)
 					return filepath.SkipDir
 				}
-				r.StaticFile("/"+info.Name(), path)
+				r.StaticFile("/static/"+info.Name(), path)
 				return nil
 			})
 
 			f, err := os.Open(path.Join(webDir, "index.html"))
 			if err != nil {
-				log.Fatal("%v", err)
+				log.Fatal("Open index.html: %v", err)
 			}
 			defer f.Close()
 			html, err := io.ReadAll(f)
 			if err != nil {
-				log.Fatal("%v", err)
+				log.Fatal("ReadAll index.html: %v", err)
 			}
 			r.GET("/", cachedHTML(html))
 		}
@@ -206,6 +192,7 @@ func Run() error {
 		auth.POST("outbound", controller.PostOutbound)
 		auth.DELETE("outbound", controller.DeleteOutbound)
 		auth.GET("message", controller.WsMessage)
+		auth.GET("logger", controller.GetLogger)
 	}
 
 	ServeGUI(engine)

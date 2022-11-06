@@ -8,7 +8,7 @@
       @mouseenter.native="showSidebar = true"
       @click.native="showSidebar = true"
     >
-      <img src="/img/icons/switch-menu.svg" width="36px" />
+      <img src="@/assets/img/switch-menu.svg" width="36px" />
     </b-sidebar>
     <b-sidebar
       :open="showSidebar"
@@ -361,6 +361,8 @@
               <b-table-column
                 v-slot="props"
                 :label="$t('operations.name')"
+                sortable
+                :custom-sort="sortConnections"
                 width="300"
               >
                 <div class="operate-box">
@@ -496,6 +498,8 @@
               <b-table-column
                 v-slot="props"
                 :label="$t('operations.name')"
+                sortable
+                :custom-sort="sortConnections"
                 width="300"
               >
                 <div class="operate-box">
@@ -688,7 +692,7 @@
 import { locateServer, handleResponse } from "@/assets/js/utils";
 import CONST from "@/assets/js/const";
 import QRCode from "qrcode";
-import jsqrcode from "./assets/js/jsqrcode";
+import { Decoder } from "@nuintun/qrcode";
 import ClipboardJS from "clipboard";
 import { Base64 } from "js-base64";
 import ModalServer from "@/components/modalServer";
@@ -972,20 +976,22 @@ export default {
         // target.result 该属性表示目标对象的DataURL
         // console.log(e.target.result);
         const file = e.target.result;
-        jsqrcode.callback = result => {
-          console.log(result);
-          if (result !== "error decoding QR Code") {
-            that.handleClickImportConfirm(result);
-          } else {
+        const qrcode = new Decoder();
+        qrcode
+          .scan(file)
+          .then(result => {
+            console.log(result);
+            that.handleClickImportConfirm(result.data);
+          })
+          .catch(error => {
+            console.error(error);
             that.$buefy.toast.open({
               message: that.$t("import.qrcodeError"),
               type: "is-warning",
               position: "is-top",
               queue: false
             });
-          }
-        };
-        jsqrcode.decode(file);
+          });
       };
       reader.readAsDataURL(file);
     },
@@ -1005,6 +1011,34 @@ export default {
       if (!isAsc) {
         return parseInt(a.pingLatency) < parseInt(b.pingLatency) ? 1 : -1;
       } else {
+        return parseInt(a.pingLatency) > parseInt(b.pingLatency) ? 1 : -1;
+      }
+    },
+    sortConnections(a, b, isAsc) {
+      // when sorted, only connected servers on top
+      // desc: error > high ping > low ping > unconnected
+      // asc: low ping > high ping > error > unconnected
+      if (a.connected && !b.connected) {
+        return -1;
+      }
+      if (!a.connected && b.connected) {
+        return 1;
+      }
+      if (!isAsc) {
+        if (isNaN(parseInt(a.pingLatency))) {
+          return -1;
+        }
+        if (isNaN(parseInt(b.pingLatency))) {
+          return 1;
+        }
+        return parseInt(a.pingLatency) < parseInt(b.pingLatency) ? 1 : -1;
+      } else {
+        if (isNaN(parseInt(a.pingLatency))) {
+          return 1;
+        }
+        if (isNaN(parseInt(b.pingLatency))) {
+          return -1;
+        }
         return parseInt(a.pingLatency) > parseInt(b.pingLatency) ? 1 : -1;
       }
     },

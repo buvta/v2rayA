@@ -9,7 +9,7 @@ import {
   ModalProgrammatic
 } from "buefy";
 import ModalLogin from "@/components/modalLogin";
-import { parseURL } from "../assets/js/utils";
+import { parseURL } from "@/assets/js/utils";
 import browser from "@/assets/js/browser";
 import modalCustomPorts from "../components/modalCustomPorts";
 import i18n from "../plugins/i18n";
@@ -148,7 +148,7 @@ axios.interceptors.response.use(
         duration: 10000,
         actionText: i18n.t("operations.switchSite"),
         onAction: () => {
-          window.open("http://v.mzz.pub", "_self");
+          window.open("http://v.v2raya.org", "_self");
         }
       });
       SnackbarProgrammatic.open({

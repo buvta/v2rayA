@@ -83,12 +83,6 @@ func PrefixListSatisfyString(prefixList []string, str string) int {
 
 /* return if v1 is after v2 */
 func VersionGreaterEqual(v1, v2 string) (is bool, err error) {
-	if v1 == "UnknownClient" {
-		return true, nil
-	}
-	if v2 == "UnknownClient" {
-		return false, nil
-	}
 	var HighPriority = []string{"debug", "unstable"}
 	if PrefixListSatisfyString(HighPriority, v1) != -1 {
 		return true, nil
@@ -250,4 +244,13 @@ func HomeExpand(path string) (string, error) {
 		return "", err
 	}
 	return filepath.Join(usr.HomeDir, path[1:]), nil
+}
+
+func HasAnyPrefix(s string, prefix []string) bool {
+	for _, p := range prefix {
+		if strings.HasPrefix(s, p) {
+			return true
+		}
+	}
+	return false
 }

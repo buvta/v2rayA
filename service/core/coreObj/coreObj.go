@@ -122,8 +122,8 @@ type Headers struct {
 	Host string `json:"Host"`
 }
 type WsSettings struct {
-	Path            string  `json:"path"`
-	Headers         Headers `json:"headers"`
+	Path    string  `json:"path"`
+	Headers Headers `json:"headers"`
 }
 type StreamSettings struct {
 	Network      string        `json:"network,omitempty"`
@@ -210,7 +210,7 @@ type KcpSettings struct {
 	ReadBufferSize   int       `json:"readBufferSize"`
 	WriteBufferSize  int       `json:"writeBufferSize"`
 	Header           KcpHeader `json:"header"`
-	Seed             string    `json:"seed"`
+	Seed             string    `json:"seed,omitempty"`
 }
 type KcpHeader struct {
 	Type     string      `json:"type"`
@@ -219,7 +219,7 @@ type KcpHeader struct {
 }
 type HttpSettings struct {
 	Path   string   `json:"path"`
-	Host   []string `json:"host"`
+	Host   []string `json:"host,omitempty"`
 	Method string   `json:"method,omitempty"`
 }
 type Hosts map[string]interface{}
